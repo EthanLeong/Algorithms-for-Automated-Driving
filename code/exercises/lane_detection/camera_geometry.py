@@ -69,10 +69,11 @@ class CameraGeometry(object):
 
         # TODO step 2: replace the 'None' values in the following code with correct expressions
         
-        self.translation_cam_to_road = None
-        self.trafo_cam_to_road = None
+        self.translation_cam_to_road = np.array([0, -self.height, 0])
+        self.trafo_cam_to_road = np.concatenate((self.rotation_cam_to_road, np.reshape(self.translation_cam_to_road, (3, 1))), axis=1)
+        self.trafo_cam_to_road = np.concatenate((self.trafo_cam_to_road, np.array([[0, 0, 0, 1]])))
         # compute vector nc. Note that R_{rc}^T = R_{cr}
-        self.road_normal_camframe = None
+        self.road_normal_camframe = rotation_road_to_cam @ np.array([0, 1, 0])
 
 
     def camframe_to_roadframe(self,vec_in_cam_frame):
@@ -94,7 +95,13 @@ class CameraGeometry(object):
             and was mapped by the camera to pixel coordinates u,v
         """
         # TODO step 2: Write this function
-        raise NotImplementedError
+        # raise NotImplementedError
+        coord_img = np.array([u, v, 1])
+        coord_road = np.zeros(3)
+        coord_temp = self.inverse_intrinsic_matrix @ coord_img
+        coord_road = (self.height/(self.road_normal_camframe.reshape(1,3) @ self.inverse_intrinsic_matrix @ coord_img.reshape(3, 1))) * coord_temp
+        return coord_road.reshape(3,)
+        
     
     def uv_to_roadXYZ_roadframe(self,u,v):
         r_camframe = self.uv_to_roadXYZ_camframe(u,v)
