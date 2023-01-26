@@ -9,7 +9,8 @@ def get_intrinsic_matrix(field_of_view_deg, image_width, image_height):
     field_of_view_rad = field_of_view_deg * np.pi/180
     alpha = (image_width / 2.0) / np.tan(field_of_view_rad / 2.)
     # TODO step 1: Complete this function
-    raise NotImplementedError
+    # raise NotImplementedError
+    return np.array([[alpha, 0, image_width/2], [0, alpha, image_height/2], [0, 0, 1]])
 
 def project_polyline(polyline_world, trafo_world_to_cam, K):
     """
@@ -32,7 +33,13 @@ def project_polyline(polyline_world, trafo_world_to_cam, K):
         First column is u, second column is v
     """
     # TODO step 1: Write this function
-    raise NotImplementedError
+    # raise NotImplementedError
+    polyline_image = np.array([np.zeros(2) for i in range(len(polyline_world))])
+    for idx, coord_world in enumerate(polyline_world):
+        polyline_cam = np.dot(trafo_world_to_cam, np.array([coord_world[0], coord_world[1], coord_world[2], 1]).T)
+        coord_img = np.dot(K, polyline_cam[0:3]/polyline_cam[3])
+        polyline_image[idx][0], polyline_image[idx][1] = coord_img[0]/coord_img[2], coord_img[1]/coord_img[2]
+    return polyline_image
 
 
 class CameraGeometry(object):
